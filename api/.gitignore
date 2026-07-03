@@ -1,0 +1,13 @@
+# 忽略环境目录
+env/
+venv
+
+
+# 忽略所有 __pycache__ 目录
+__pycache__/
+
+# 忽略 .pyc 文件
+*.pyc
+
+student_db/
+db/ns.xlsx
