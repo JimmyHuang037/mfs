@@ -1,11 +1,16 @@
 export interface Student {
-  name: string;
+  id?: number;
   studentId: string;
+  name: string;
+  classId?: number;
+  className?: string;
   scores?: Score[];
 }
 
 export interface Score {
-  score: number;
+  id?: number;
+  studentId: string;
   subject: string;
   type: string;
+  score: number | string;
 }

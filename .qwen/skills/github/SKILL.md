@@ -1,79 +1,65 @@
----
-name: github
-description: GitHub workflow operations — commit, push, sync, merge, PR, status check, and conflict resolution for the mfs project
-priority: 10
----
+# GitHub Skill
 
-# GitHub Workflow Skill
+Check and manage the MFS repository on GitHub using the GitHub REST API.
 
-Handles common GitHub operations for the mfs monorepo.
+## Prerequisites
 
-## Repository Info
+- Token stored in `/home/jimmy/repo/mfs/.env` as `GITHUB_TOKEN`
+- Repo: `JimmyHuang037/mfs`
+- No `gh` CLI installed — use `curl` + GitHub API
 
-- **Remote**: `git@github.com:JimmyHuang037/mfs.git`
-- **Default branch**: `main`
-- **GitHub**: https://github.com/JimmyHuang037/mfs
+## Commands
 
-## Credentials
-
-GitHub credentials are stored in `/home/jimmy/repo/mfs/.env` (gitignored):
-- `GITHUB_USER` — username
-- `GITHUB_PASS` — password
-- `GITHUB_TOKEN` — Personal Access Token (for API calls)
-
-## Common Operations
-
-### 1. Status Check
+### Check Pull Requests
 ```bash
-git status
-git log --oneline -5
-```
-
-### 2. Commit & Push
-```bash
-git add -A
-git commit -m "<message>"
-git push origin main
-```
-
-### 3. Sync (pull latest)
-```bash
-git pull origin main --rebase
-```
-
-### 4. Create PR
-```bash
-# Push branch first, then create PR via API
-curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"title":"<title>","head":"<branch>","base":"main"}' \
+source /home/jimmy/repo/mfs/.env && \
+curl -s -H "Authorization: token $GITHUB_TOKEN" \
   https://api.github.com/repos/JimmyHuang037/mfs/pulls
 ```
 
-### 5. Merge PR
+### Check Issues
 ```bash
-curl -s -X PUT -H "Authorization: token $GITHUB_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"merge_method":"squash"}' \
-  https://api.github.com/repos/JimmyHuang037/mfs/pulls/<number>/merge
+source /home/jimmy/repo/mfs/.env && \
+curl -s -H "Authorization: token $GITHUB_TOKEN" \
+  https://api.github.com/repos/JimmyHuang037/mfs/issues?state=open
 ```
 
-### 6. Resolve Conflicts
+### Check Repo Info
 ```bash
-# After pull with conflicts, manually fix files, then:
-git add <resolved-files>
-git commit -m "merge: resolve conflicts"
-git push origin main
+source /home/jimmy/repo/mfs/.env && \
+curl -s -H "Authorization: token $GITHUB_TOKEN" \
+  https://api.github.com/repos/JimmyHuang037/mfs
 ```
 
-## Branch Convention
+### Check Branches
+```bash
+source /home/jimmy/repo/mfs/.env && \
+curl -s -H "Authorization: token $GITHUB_TOKEN" \
+  https://api.github.com/repos/JimmyHuang037/mfs/branches
+```
 
-- `main` — stable, production-ready
-- `feat/<name>` — new features
-- `fix/<name>` — bug fixes
+### Check Recent Commits
+```bash
+source /home/jimmy/repo/mfs/.env && \
+curl -s -H "Authorization: token $GITHUB_TOKEN" \
+  https://api.github.com/repos/JimmyHuang037/mfs/commits?per_page=5
+```
 
-## Notes
+### Create a Pull Request
+```bash
+source /home/jimmy/repo/mfs/.env && \
+curl -s -X POST \
+  -H "Authorization: token $GITHUB_TOKEN" \
+  -H "Accept: application/vnd.github.v3+json" \
+  https://api.github.com/repos/JimmyHuang037/mfs/pulls \
+  -d '{"title":"PR_TITLE","head":"BRANCH_NAME","base":"main","body":"PR_DESCRIPTION"}'
+```
 
-- Always pull before starting new work
-- Use squash merge for feature branches
-- Never commit `.env` or `node_modules/`
+## Usage
+
+Invoke with `/github` followed by what to check:
+- `/github check prs` — list open pull requests
+- `/github check issues` — list open issues
+- `/github check branches` — list branches
+- `/github check commits` — show recent commits
+- `/github check repo` — show repo info

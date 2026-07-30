@@ -803,7 +803,7 @@ export class TeacherScoresComponent implements OnInit {
     if (!this.statsExamType) return;
     console.log(`[TeacherScoresComponent] loading class rank: type=${this.statsExamType}`);
     // 使用最新日期
-    this.apiService.getClassTotalRank(this.teacherId, this.statsExamType, this.getLatestDate()).subscribe({
+    this.apiService.getClassTotalRank(this.teacherId, this.statsExamType).subscribe({
       next: (data) => {
         this.classRankData = data;
         this.classRankMax = Math.max(...data.map((d: any) => d.avgTotal), 1);
@@ -815,10 +815,9 @@ export class TeacherScoresComponent implements OnInit {
 
   loadSegmentsAndTop3(): void {
     if (!this.statsClassId || !this.statsExamType) return;
-    const date = this.getLatestDate();
     console.log(`[TeacherScoresComponent] loading segments+top3: class=${this.statsClassId}, type=${this.statsExamType}`);
 
-    this.apiService.getSubjectSegments(this.statsClassId, this.teacherId, this.statsExamType, date).subscribe({
+    this.apiService.getSubjectSegments(this.statsClassId, this.teacherId, this.statsExamType).subscribe({
       next: (data) => {
         this.segmentData = data;
         console.log(`[TeacherScoresComponent] segments loaded`);
@@ -826,7 +825,7 @@ export class TeacherScoresComponent implements OnInit {
       error: (err) => console.error(`[TeacherScoresComponent] loadSegments failed:`, err),
     });
 
-    this.apiService.getClassTop3(this.statsClassId, this.statsExamType, date).subscribe({
+    this.apiService.getClassTop3(this.statsClassId, this.statsExamType).subscribe({
       next: (data) => {
         this.top3Data = data;
         console.log(`[TeacherScoresComponent] top3 loaded`);
@@ -848,7 +847,7 @@ export class TeacherScoresComponent implements OnInit {
   loadTeacherCompare(): void {
     if (!this.compareExamType) return;
     console.log(`[TeacherScoresComponent] loading teacher compare: type=${this.compareExamType}`);
-    this.apiService.getSubjectTeacherCompare(this.teacherId, this.compareExamType, this.getLatestDate()).subscribe({
+    this.apiService.getSubjectTeacherCompare(this.teacherId, this.compareExamType).subscribe({
       next: (data) => {
         this.compareData = data;
         console.log(`[TeacherScoresComponent] teacher compare loaded: ${data.teachers?.length} teachers`);
@@ -980,11 +979,6 @@ export class TeacherScoresComponent implements OnInit {
   }
 
   // ===== Helpers =====
-
-  getLatestDate(): string {
-    const today = new Date();
-    return today.toISOString().split('T')[0];
-  }
 
   logout(): void {
     console.log(`[TeacherScoresComponent] logout`);

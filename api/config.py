@@ -1,5 +1,6 @@
 import os
 
+
 class Config:
     DB_HOST = os.getenv('DB_HOST', 'localhost')
     DB_USER = os.getenv('DB_USER', 'root')

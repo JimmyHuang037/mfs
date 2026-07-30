@@ -1,0 +1,47 @@
+name: mfs-test
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mfs-test-mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_0900_ai_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: test123
+      MYSQL_DATABASE: student_db
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-test-data:/var/lib/mysql
+      - ./db/students_db.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./db/seed_data.sql:/docker-entrypoint-initdb.d/02-data.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ./api
+    container_name: mfs-test-api
+    command: ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--access-logfile", "-", "--error-logfile", "-", "run:app"]
+    environment:
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: test123
+      DB_NAME: student_db
+    ports:
+      - "5001:5000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  web:
+    build: ./web
+    container_name: mfs-test-web
+    ports:
+      - "4201:80"
+    depends_on:
+      - api
+
+volumes:
+  mysql-test-data:

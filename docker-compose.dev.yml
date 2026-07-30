@@ -1,0 +1,56 @@
+name: mfs-dev
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mfs-dev-mysql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_0900_ai_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: dev123
+      MYSQL_DATABASE: student_db
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-dev-data:/var/lib/mysql
+      - ./db/students_db.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./db/seed_data.sql:/docker-entrypoint-initdb.d/02-data.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ./api
+    container_name: mfs-dev-api
+    command: ["python", "run.py"]
+    environment:
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: dev123
+      DB_NAME: student_db
+      FLASK_DEBUG: "1"
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./api:/app
+      - /app/env
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  web:
+    image: node:22-alpine
+    container_name: mfs-dev-web
+    working_dir: /app
+    command: ["sh", "-c", "npm install --legacy-peer-deps && npx ng serve --host 0.0.0.0 --poll 1000 --proxy-config proxy.docker.conf.json"]
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+    depends_on:
+      - api
+
+volumes:
+  mysql-dev-data:
