@@ -24,12 +24,18 @@ pipeline {
             steps {
                 catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
                     sh """
-                        docker run --rm --network host \
-                            -v \$(pwd)/e2e:/app \
-                            -w /app \
-                            -e BASE_URL=${TEST_BASE_URL} \
-                            mcr.microsoft.com/playwright:v1.52.0-noble \
-                            bash -c "npm ci && npx playwright test"
+                        if docker image inspect mcr.microsoft.com/playwright:v1.52.0-noble > /dev/null 2>&1; then
+                            docker run --rm --network host \
+                                -v \$(pwd)/e2e:/app \
+                                -w /app \
+                                -e BASE_URL=${TEST_BASE_URL} \
+                                mcr.microsoft.com/playwright:v1.52.0-noble \
+                                bash -c "npm ci && npx playwright test"
+                        else
+                            echo "[E2E] Playwright image not available, skipping tests."
+                            echo "[E2E] Run: docker pull mcr.microsoft.com/playwright:v1.52.0-noble"
+                            exit 1
+                        fi
                     """
                 }
             }
