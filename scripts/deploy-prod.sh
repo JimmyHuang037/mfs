@@ -3,8 +3,9 @@
 # 用法: ./scripts/deploy-prod.sh [--skip-tests] [--skip-build]
 set -euo pipefail
 
-PROD_HOST="172.30.115.241"
+PROD_HOST="172.30.115.33"
 PROD_USER="jimmyuser2"
+PROD_DIR="mfs-prod"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 
@@ -52,7 +53,7 @@ if [ -n "$MIGRATION_FILES" ]; then
         log "  Applying: $f"
         scp "$f" "${PROD_USER}@${PROD_HOST}:/tmp/"
         ssh "${PROD_USER}@${PROD_HOST}" \
-            "docker exec -i mfs-prod-mysql mysql -uroot -p\"\$MYSQL_ROOT_PASSWORD\" student_db < /tmp/$(basename "$f") && rm /tmp/$(basename "$f")"
+            "source ~/${PROD_DIR}/.env && docker exec -i mfs-prod-mysql mysql -uroot -p\"\$MYSQL_ROOT_PASSWORD\" student_db < /tmp/$(basename "$f") && rm /tmp/$(basename "$f")"
     done
     log "Migrations applied."
 else
@@ -63,12 +64,11 @@ fi
 log "Transferring images to production..."
 docker save mfs-prod-api mfs-prod-web | ssh "${PROD_USER}@${PROD_HOST}" docker load
 
-log "Updating code and restarting services..."
-ssh "${PROD_USER}@${PROD_HOST}" \
-    "cd ~/mfs && git pull origin main && docker compose -f docker-compose.prod.yml up -d"
+log "Restarting services..."
+ssh "${PROD_USER}@${PROD_HOST}" "cd ~/${PROD_DIR} && docker compose up -d"
 
 sleep 10
 log "Service status:"
-ssh "${PROD_USER}@${PROD_HOST}" "docker compose -f docker-compose.prod.yml ps"
+ssh "${PROD_USER}@${PROD_HOST}" "cd ~/${PROD_DIR} && docker compose ps"
 
 log "✅ Deployment complete!"

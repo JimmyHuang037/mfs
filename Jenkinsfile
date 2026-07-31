@@ -2,8 +2,9 @@ pipeline {
     agent any
 
     environment {
-        PROD_HOST    = '172.30.115.241'
-        PROD_USER    = 'jimmyuser2'
+        PROD_HOST     = '172.30.115.33'
+        PROD_USER     = 'jimmyuser2'
+        PROD_DIR      = 'mfs-prod'
         TEST_BASE_URL = 'http://localhost:4201'
     }
 
@@ -50,7 +51,7 @@ pipeline {
                                 echo "[MIGRATE] \$f"
                                 scp -o StrictHostKeyChecking=no "\$f" ${PROD_USER}@${PROD_HOST}:/tmp/
                                 ssh -o StrictHostKeyChecking=no ${PROD_USER}@${PROD_HOST} \
-                                    "docker exec -i mfs-prod-mysql mysql -uroot -p\\\$MYSQL_ROOT_PASSWORD student_db < /tmp/\$(basename \$f) && rm /tmp/\$(basename \$f)"
+                                    "source ~/${PROD_DIR}/.env && docker exec -i mfs-prod-mysql mysql -uroot -p\\\$MYSQL_ROOT_PASSWORD student_db < /tmp/\$(basename \$f) && rm /tmp/\$(basename \$f)"
                             done
                         else
                             echo "[MIGRATE] No migrations, skipping."
@@ -70,12 +71,12 @@ pipeline {
 
                         echo "[DEPLOY] Restarting services..."
                         ssh -o StrictHostKeyChecking=no ${PROD_USER}@${PROD_HOST} \
-                            "cd ~/mfs && git pull origin main && docker compose -f docker-compose.prod.yml up -d"
+                            "cd ~/${PROD_DIR} && docker compose up -d"
 
                         sleep 10
                         echo "[DEPLOY] Service status:"
                         ssh -o StrictHostKeyChecking=no ${PROD_USER}@${PROD_HOST} \
-                            "docker compose -f docker-compose.prod.yml ps"
+                            "cd ~/${PROD_DIR} && docker compose ps"
                     """
                 }
             }
