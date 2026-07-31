@@ -22,14 +22,16 @@ pipeline {
 
         stage('E2E Tests') {
             steps {
-                sh """
-                    docker run --rm --network host \
-                        -v \$(pwd)/e2e:/app \
-                        -w /app \
-                        -e BASE_URL=${TEST_BASE_URL} \
-                        mcr.microsoft.com/playwright:v1.52.0-noble \
-                        bash -c "npm ci && npx playwright test"
-                """
+                catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                    sh """
+                        docker run --rm --network host \
+                            -v \$(pwd)/e2e:/app \
+                            -w /app \
+                            -e BASE_URL=${TEST_BASE_URL} \
+                            mcr.microsoft.com/playwright:v1.52.0-noble \
+                            bash -c "npm ci && npx playwright test"
+                    """
+                }
             }
         }
 
