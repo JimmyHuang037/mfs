@@ -6,7 +6,7 @@ export default defineConfig({
   retries: 1,
   outputDir: './test-results/output',
   use: {
-    baseURL: 'http://localhost:4200',
+    baseURL: process.env.BASE_URL || 'http://localhost:4200',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     trace: 'on-first-retry',
