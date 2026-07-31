@@ -2,7 +2,7 @@ FROM jenkins/jenkins:lts
 
 USER root
 
-# Use Aliyun mirror for faster downloads in China
+# Use Aliyun mirror for Debian packages
 RUN sed -i 's|deb.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list.d/debian.sources
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -17,6 +17,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/*
 
 USER jenkins
+
+# Use Tsinghua mirror for Jenkins plugins
+ENV JENKINS_UC=https://mirrors.tuna.tsinghua.edu.cn/jenkins/updates/update-center.json
 
 RUN jenkins-plugin-cli --plugins \
     git \
