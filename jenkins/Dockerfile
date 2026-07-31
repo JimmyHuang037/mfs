@@ -16,6 +16,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     docker-ce-cli docker-compose-plugin && \
     rm -rf /var/lib/apt/lists/*
 
+# Match host docker group GID for docker.sock access
+RUN groupadd -g 109 docker && usermod -aG docker jenkins
+
 USER jenkins
 
 # Use Tsinghua mirror for Jenkins plugins

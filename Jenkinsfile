@@ -89,8 +89,5 @@ pipeline {
         failure {
             echo '❌ Pipeline failed — check logs above.'
         }
-        always {
-            cleanWs()
-        }
     }
 }
